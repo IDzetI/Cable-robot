@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./fins"
 	"bufio"
+	"cable_robot_v2/fins"
 	"fmt"
 	"math"
 	"os"

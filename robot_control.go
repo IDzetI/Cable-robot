@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./fins"
+	"cable_robot_v2/fins"
 	"fmt"
 )
 
