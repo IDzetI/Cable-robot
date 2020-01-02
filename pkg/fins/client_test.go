@@ -1,8 +1,8 @@
 package fins
 
 import (
-	"../assert"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"net"
 	"strconv"
@@ -27,8 +27,9 @@ func TestFinsClient(t *testing.T) {
 	plc := NewPLCMock(plcAddr, answers)
 	defer plc.CloseConnection()
 
-	c := NewClient(plcAddr)
+	c, _ := NewClient(plcAddr)
 	defer c.CloseConnection()
+
 	err = c.WriteD(100, toWrite)
 	assert.Nil(t, err)
 	vals, err := c.ReadD(100, 5)

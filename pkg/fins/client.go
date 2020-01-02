@@ -2,7 +2,6 @@ package fins
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -20,23 +19,21 @@ type Response struct {
 	Data []uint16
 }
 
-func NewClient(plcAddr string) *Client {
-	c := new(Client)
-	conn, err := net.Dial("udp", plcAddr)
+func NewClient(plcAddr string) (c *Client, err error) {
+
+	c = new(Client)
+	c.conn, err = net.Dial("udp", plcAddr)
 	if err != nil {
-		log.Fatal(err)
-		panic(fmt.Sprintf("error resolving UDP port: %s\n", plcAddr))
+		return
 	}
-	c.conn = conn
+
 	c.resp = make([]chan Response, 256) //storage for all responses, sid is byte - only 256 values
 	go c.listenLoop()
-
-	return c
-
+	return
 }
 
-func (c *Client) CloseConnection() {
-	c.conn.Close()
+func (c *Client) CloseConnection() error {
+	return c.conn.Close()
 }
 
 func (c *Client) incrementSid() byte {
@@ -65,7 +62,6 @@ func (c *Client) read(sid byte, cmd []byte) ([]uint16, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	ans := <-c.resp[sid]
 	return ans.Data, nil
 }
@@ -133,7 +129,8 @@ func (c *Client) listenLoop() {
 		buf := make([]byte, 2048)
 		n, err := bufio.NewReader(c.conn).Read(buf)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
 
 		if n > 0 {
