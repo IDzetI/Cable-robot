@@ -3,101 +3,113 @@ package robot
 import (
 	"errors"
 	"github.com/IDzetI/Cable-robot/internal/robot/parser"
-	"github.com/IDzetI/Cable-robot/pkg/utils"
-	"strconv"
 	"strings"
 )
 
 type file struct {
-	plt        *robot_parser.PltConfig
 	trajectory [][]float64
-}
-
-func (uc *UseCase) FileLoadPLT(file string, c chan string) (err error) {
-
-	//check config
-	if uc.file.plt == nil {
-		return errors.New("plt config is empty")
-	}
-
-	if len(uc.file.plt.start) != 3 {
-		uc.file.plt.start = []float64{0, 0, 0}
-	}
-
-	//read file
-	lines := strings.Split(utils.ReadAll(file), "\n")
-
-	//parse
-	current := uc.file.plt.start
-	var trajectory [][]float64
-	for _, line := range lines {
-		var x, y, z float64
-		switch line[:2] {
-		case "PU":
-			z = uc.file.plt.up
-			break
-		case "PD":
-			z = uc.file.plt.down
-			break
-		default:
-			continue
-		}
-
-		x, y, err = pltLineToXY(line[2:])
-		if err != nil {
-			return
-		}
-
-		if current[2] != z {
-			current[2] = z
-			trajectory = append(trajectory, current)
-		}
-		current = []float64{x, y, z}
-		trajectory = append(trajectory, current)
-	}
-
-	uc.file.trajectory = trajectory
-	return
+	cursor     int
+	plt        *robot_parser.Plt
+	tr         robot_parser.Rt
 }
 
 func (uc *UseCase) FileLoad(file string, c chan string) (err error) {
+	fileName := strings.Split(file, ".")
+
+	var trajectory [][]float64
+
+	switch fileName[len(fileName)-1] {
+	case "plt":
+		if uc.file.plt == nil {
+			err = errors.New("plt config is empty")
+			return
+		}
+		trajectory, err = uc.file.plt.Read(file)
+		break
+	case "rt":
+		trajectory, err = uc.file.tr.Read(file)
+		break
+	}
+
+	if err != nil {
+		return
+	}
+	uc.file.trajectory = trajectory
+	uc.file.cursor = 0
 	return
+}
+
+func (uc *UseCase) checkFileTrajectory() error {
+	if uc.file.trajectory != nil {
+		return errors.New("trajectory is empty")
+	}
+	if len(uc.file.trajectory) < uc.file.cursor {
+		return errors.New("invalid cursor value")
+	}
+	return nil
 }
 
 func (uc *UseCase) FileInit(c chan string) (err error) {
-	return
+	err = uc.checkFileTrajectory()
+	if err != nil {
+		return
+	}
+	return uc.MoveInJoinSpace(uc.file.trajectory[uc.file.cursor], c)
 }
 
 func (uc *UseCase) FileNext(c chan string) (err error) {
-	return
+	err = uc.checkFileTrajectory()
+	if err != nil {
+		return
+	}
+	err = uc.FileSetCursor((uc.file.cursor+1)%len(uc.file.trajectory), c)
+	if err != nil {
+		return
+	}
+	return uc.FileCurrent(c)
 }
 
 func (uc *UseCase) FileCurrent(c chan string) (err error) {
-	return
+	err = uc.checkFileTrajectory()
+	if err != nil {
+		return
+	}
+	return uc.MoveInCartesianSpace(uc.file.trajectory[uc.file.cursor], c)
 }
 
 func (uc *UseCase) FilePrevious(c chan string) (err error) {
-	return
+	err = uc.checkFileTrajectory()
+	if err != nil {
+		return
+	}
+	err = uc.FileSetCursor((uc.file.cursor+len(uc.file.trajectory)-1)%len(uc.file.trajectory), c)
+	if err != nil {
+		return
+	}
+	return uc.FileCurrent(c)
 }
 
 func (uc *UseCase) FileSetCursor(i int, c chan string) (err error) {
-	return
-}
-
-func (uc *UseCase) FileGo(c chan string) (err error) {
+	if uc.file.trajectory != nil {
+		return errors.New("trajectory is empty")
+	}
+	if len(uc.file.trajectory) < i {
+		return errors.New("invalid cursor value")
+	}
+	uc.file.cursor = i
 	return
 }
 
 func (uc *UseCase) FileRun(c chan string) (err error) {
-	return
-}
-
-func pltLineToXY(line string) (x float64, y float64, err error) {
-	xy := strings.Split(line, " ")
-	if len(xy) != 2 {
-		err = errors.New("invalid plt line: " + line)
+	for true {
+		err = uc.FileNext(c)
+		if err != nil {
+			return
+		}
+		if uc.file.cursor == 0 {
+			break
+		}
+		break
 	}
-	x, err = strconv.ParseFloat(xy[0], 64)
-	y, err = strconv.ParseFloat(xy[1][:len(xy[1])-2], 64)
 	return
 }

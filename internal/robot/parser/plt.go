@@ -1,35 +1,40 @@
 package robot_parser
 
 import (
-	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"errors"
+	"io/ioutil"
+	"strconv"
 	"strings"
 )
 
-type PltConfig struct {
+type Plt struct {
 	up    float64
 	down  float64
 	start []float64
 }
 
-func PLT(file string) (trajectory [][]float64, err error) {
-	if len(uc.file.plt.start) != 3 {
-		uc.file.plt.start = []float64{0, 0, 0}
+func (plt *Plt) Read(file string) (trajectory [][]float64, err error) {
+	if len(plt.start) != 3 {
+		plt.start = []float64{0, 0, 0}
 	}
 
 	//read file
-	lines := strings.Split(utils.ReadAll(file), "\n")
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return
+	}
+	lines := strings.Split(string(data), "\n")
 
 	//parse
-	current := uc.file.plt.start
-	var trajectory [][]float64
+	current := plt.start
 	for _, line := range lines {
 		var x, y, z float64
 		switch line[:2] {
 		case "PU":
-			z = uc.file.plt.up
+			z = plt.up
 			break
 		case "PD":
-			z = uc.file.plt.down
+			z = plt.down
 			break
 		default:
 			continue
@@ -47,8 +52,15 @@ func PLT(file string) (trajectory [][]float64, err error) {
 		current = []float64{x, y, z}
 		trajectory = append(trajectory, current)
 	}
+	return
+}
 
-	uc.file.trajectory = trajectory
-
+func pltLineToXY(line string) (x float64, y float64, err error) {
+	xy := strings.Split(line, " ")
+	if len(xy) != 2 {
+		err = errors.New("invalid plt line: " + line)
+	}
+	x, err = strconv.ParseFloat(xy[0], 64)
+	y, err = strconv.ParseFloat(xy[1][:len(xy[1])-2], 64)
 	return
 }
