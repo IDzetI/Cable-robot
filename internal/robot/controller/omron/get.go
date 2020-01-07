@@ -1,7 +1,7 @@
 package robot_controller_omron
 
 import (
-	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"github.com/IDzetI/Cable-robot.git/pkg/utils"
 )
 
 func (c *controller) GetLengths() (lengths []float64, err error) {

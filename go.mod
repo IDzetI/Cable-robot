@@ -1,4 +1,4 @@
-module github.com/IDzetI/Cable-robot
+module github.com/IDzetI/Cable-robot.git
 
 go 1.23
 

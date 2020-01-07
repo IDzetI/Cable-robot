@@ -15,6 +15,6 @@ func Init(h float64, r float64, R float64, C [][]float64) (m model, err error) {
 		R: R,
 		C: C,
 	}
-	m.lengths, err = m.getDegree([]float64{0, 0, 0})
+	m.lengths, err = m.getDegrees([]float64{0, 0, 0})
 	return
 }

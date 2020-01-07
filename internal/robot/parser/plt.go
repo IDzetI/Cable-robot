@@ -8,14 +8,14 @@ import (
 )
 
 type Plt struct {
-	up    float64
-	down  float64
-	start []float64
+	Up    float64
+	Down  float64
+	Start []float64
 }
 
 func (plt *Plt) Read(file string) (trajectory [][]float64, err error) {
-	if len(plt.start) != 3 {
-		plt.start = []float64{0, 0, 0}
+	if len(plt.Start) != 3 {
+		plt.Start = []float64{0, 0, 0}
 	}
 
 	//read file
@@ -26,15 +26,15 @@ func (plt *Plt) Read(file string) (trajectory [][]float64, err error) {
 	lines := strings.Split(string(data), "\n")
 
 	//parse
-	current := plt.start
+	current := plt.Start
 	for _, line := range lines {
 		var x, y, z float64
 		switch line[:2] {
 		case "PU":
-			z = plt.up
+			z = plt.Up
 			break
 		case "PD":
-			z = plt.down
+			z = plt.Down
 			break
 		default:
 			continue

@@ -18,7 +18,6 @@ const (
 	cmdControlRESET = "reset"
 
 	cmdFile          = "f"
-	cmdFilePase      = "pars"
 	cmdFileLoad      = "load"
 	cmdFileInit      = "init"
 	cmdFileNext      = "next"
@@ -27,6 +26,9 @@ const (
 	cmdFileSetCursor = "set"
 	cmdFileGo        = "go"
 	cmdFileRun       = "run"
+
+	cmdFileGoPrevious = "p"
+	cmdFileGoExit     = "q"
 
 	cmdExit = "exit"
 )

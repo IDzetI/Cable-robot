@@ -7,8 +7,7 @@ import (
 	"strings"
 )
 
-type Rt struct {
-}
+type Rt struct{}
 
 func (rt *Rt) Read(file string) (trajectory [][]float64, err error) {
 	//read file

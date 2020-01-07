@@ -1,7 +1,7 @@
 package robot_trajectory_v1
 
 import (
-	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"github.com/IDzetI/Cable-robot.git/pkg/utils"
 )
 
 /*

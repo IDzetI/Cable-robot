@@ -3,7 +3,7 @@ package robot_trajectory_v1
 import (
 	"errors"
 	"fmt"
-	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"github.com/IDzetI/Cable-robot.git/pkg/utils"
 )
 
 func checkPosition(position []float64, boarders [][]float64) (err error) {

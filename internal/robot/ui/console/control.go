@@ -3,8 +3,8 @@ package robot_ui_console
 import (
 	"bufio"
 	"fmt"
-	"github.com/IDzetI/Cable-robot/internal/robot"
-	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"github.com/IDzetI/Cable-robot.git/internal/robot"
+	"github.com/IDzetI/Cable-robot.git/pkg/utils"
 	"log"
 	"os"
 	"strconv"
@@ -78,9 +78,6 @@ func Start(uc robot.UseCase) (err error) {
 			break
 		case cmdFile:
 			switch data[1] {
-			case cmdFilePase:
-				execWithString(data[2], c, uc.FileLoadPLT)
-				break
 			case cmdFileLoad:
 				execWithString(data[2], c, uc.FileLoad)
 				break
@@ -100,7 +97,7 @@ func Start(uc robot.UseCase) (err error) {
 				execWithInt(data[2], c, uc.FileSetCursor)
 				break
 			case cmdFileGo:
-				exec(c, uc.FileGo)
+				fileGo(reader, uc, c)
 				break
 			case cmdFileRun:
 				exec(c, uc.FileRun)
@@ -114,6 +111,27 @@ func Start(uc robot.UseCase) (err error) {
 		}
 	}
 	return
+}
+
+func fileGo(reader *bufio.Reader, uc robot.UseCase, c chan string) {
+	fmt.Println("press ENTER to next\n" +
+		"write p and press ENTER to go to previous position\n" +
+		"write q and press ENTER to exit from this mode")
+	for true {
+		command, err := reader.ReadString('\n')
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+		switch command {
+		case cmdFileGoPrevious:
+			exec(c, uc.FilePrevious)
+		case cmdFileGoExit:
+			return
+		default:
+			exec(c, uc.FileNext)
+		}
+	}
 }
 
 func exec(c chan string, f func(chan string) error) {

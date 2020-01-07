@@ -2,7 +2,7 @@ package robot
 
 import (
 	"errors"
-	"github.com/IDzetI/Cable-robot/internal/robot/parser"
+	"github.com/IDzetI/Cable-robot.git/internal/robot/parser"
 	"strings"
 )
 

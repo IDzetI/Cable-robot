@@ -7,7 +7,7 @@ import (
 )
 
 func (m *model) GetDegrees(point []float64) (lengths []float64, err error) {
-	degrees, err := m.getDegree(point)
+	degrees, err := m.getDegrees(point)
 	if err != nil {
 		return
 	}
@@ -18,7 +18,7 @@ func (m *model) GetDegrees(point []float64) (lengths []float64, err error) {
 	return
 }
 
-func (m *model) getDegree(point []float64) (degree []float64, err error) {
+func (m *model) getDegrees(point []float64) (degrees []float64, err error) {
 
 	// check point
 	if len(point) != 3 {
@@ -50,7 +50,7 @@ func (m *model) getDegree(point []float64) (degree []float64, err error) {
 			Cs[1] + m.r*math.Cos(gamma)*sinB,
 			Cs[2] + m.r*math.Sin(gamma)}
 
-		degree = append(degree,
+		degrees = append(degrees,
 			m.r*(math.Pi-gamma)+
 				math.Sqrt(math.Pow(point[0]-B[0], 2)+math.Pow(point[1]-B[1], 2)+math.Pow(point[2]-B[2], 2)))
 	}
