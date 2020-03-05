@@ -20,7 +20,6 @@ type Response struct {
 }
 
 func NewClient(plcAddr string) (c *Client, err error) {
-
 	c = new(Client)
 	c.conn, err = net.Dial("udp", plcAddr)
 	if err != nil {

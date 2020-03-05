@@ -1,7 +1,7 @@
 package robot_controller_omron
 
 import (
-	"github.com/IDzetI/Cable-robot.git/pkg/fins"
+	"github.com/IDzetI/Cable-robot/pkg/fins"
 )
 
 type controller struct {

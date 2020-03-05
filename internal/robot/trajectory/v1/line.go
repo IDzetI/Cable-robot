@@ -1,7 +1,7 @@
 package robot_trajectory_v1
 
 import (
-	"github.com/IDzetI/Cable-robot.git/pkg/utils"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 )
 
 /*
@@ -21,7 +21,7 @@ func (t *trajectory) Line(position []float64) (points [][]float64, err error) {
 		return
 	}
 
-	err = checkPosition(position, t.boarders)
+	err = t.checkPosition(position)
 	if err != nil {
 		return
 	}

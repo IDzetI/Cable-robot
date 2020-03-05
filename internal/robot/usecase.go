@@ -2,10 +2,11 @@ package robot
 
 import (
 	"errors"
-	"github.com/IDzetI/Cable-robot.git/internal/robot/controller"
-	"github.com/IDzetI/Cable-robot.git/internal/robot/kinematics"
-	"github.com/IDzetI/Cable-robot.git/internal/robot/parser"
-	"github.com/IDzetI/Cable-robot.git/internal/robot/trajectory"
+	"github.com/IDzetI/Cable-robot/internal/robot/controller"
+	robot_extruder "github.com/IDzetI/Cable-robot/internal/robot/controller/extruder"
+	"github.com/IDzetI/Cable-robot/internal/robot/kinematics"
+	"github.com/IDzetI/Cable-robot/internal/robot/parser"
+	"github.com/IDzetI/Cable-robot/internal/robot/trajectory"
 )
 
 type UseCase struct {
@@ -13,15 +14,20 @@ type UseCase struct {
 	trajectoryCartesianSpace robot_trajectory.Trajectory
 	trajectoryJoinSpace      robot_trajectory.Trajectory
 	kinematics               robot_kinematics.Kinematics
+	extruder                 robot_extruder.Extruder
 	file                     file
 }
 
-func Init(c robot_controller.Controller, tc, tj robot_trajectory.Trajectory, k robot_kinematics.Kinematics) (uc UseCase) {
+func New(c robot_controller.Controller,
+	tc, tj robot_trajectory.Trajectory,
+	k robot_kinematics.Kinematics,
+	e robot_extruder.Extruder) (uc UseCase) {
 	return UseCase{
 		controller:               c,
 		trajectoryCartesianSpace: tc,
 		trajectoryJoinSpace:      tj,
 		kinematics:               k,
+		extruder:                 e,
 		file: file{
 			trajectory: [][]float64{},
 			cursor:     0,
@@ -43,7 +49,7 @@ func (uc *UseCase) ConfigPLT(up, down float64, start []float64) (err error) {
 	return
 }
 
-func (uc *UseCase) ReadDegrees() (lengths []float64, err error) {
+func (uc *UseCase) ReadDegrees() (degrees []float64, err error) {
 	return uc.controller.GetDegrees()
 }
 

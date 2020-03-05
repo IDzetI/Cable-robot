@@ -1,10 +1,10 @@
-package robot_ui_console
+package robot_service_console
 
 import (
 	"bufio"
 	"fmt"
-	"github.com/IDzetI/Cable-robot.git/internal/robot"
-	"github.com/IDzetI/Cable-robot.git/pkg/utils"
+	"github.com/IDzetI/Cable-robot/internal/robot"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 	"log"
 	"os"
 	"strconv"
@@ -20,11 +20,11 @@ func Start(uc robot.UseCase) (err error) {
 	//create reader for reed from console
 	reader := bufio.NewReader(os.Stdin)
 
-	for true {
+	for exit := false; !exit; {
 		//read line
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			return
+			break
 		}
 
 		line = strings.ReplaceAll(strings.ReplaceAll(line, "\n", ""), "\r", "")
@@ -41,73 +41,77 @@ func Start(uc robot.UseCase) (err error) {
 
 		case cmdSet:
 			switch data[1] {
+
 			case cmdSetSpeed:
 				setSingleValue(data[2], uc.SetSpeedCartesianSpace)
-				break
+
 			case cmdSetMinSpeed:
 				setSingleValue(data[2], uc.SetMinSpeedCartesianSpace)
-				break
+
 			case cmdSetAcceleration:
 				setSingleValue(data[2], uc.SetAccelerationCartesianSpace)
-				break
+
 			case cmdSetDeceleration:
 				setSingleValue(data[2], uc.SetDecelerationCartesianSpace)
-				break
+
 			default:
-				break
 			}
-			break
+
 		case cmdInit:
 			moveToPoint(data[1:], c, uc.MoveInJoinSpace)
-			break
+
 		case cmdMove:
 			moveToPoint(data[1:], c, uc.MoveInCartesianSpace)
-			break
+
 		case cmdControl:
 			switch data[1] {
+
 			case cmdControlON:
 				exec(c, uc.ControlOn)
-				break
+
 			case cmdControlOFF:
 				exec(c, uc.ControlOff)
-				break
+
 			case cmdControlRESET:
 				exec(c, uc.ControlOff)
 				exec(c, uc.ControlOn)
 			}
-			break
+
 		case cmdFile:
 			switch data[1] {
+
 			case cmdFileLoad:
 				execWithString(data[2], c, uc.FileLoad)
-				break
+
 			case cmdFileInit:
 				exec(c, uc.FileInit)
-				break
+
 			case cmdFileNext:
 				exec(c, uc.FileNext)
-				break
+
 			case cmdFileCurrent:
 				exec(c, uc.FileCurrent)
-				break
+
 			case cmdFilePrevious:
 				exec(c, uc.FilePrevious)
-				break
+
 			case cmdFileSetCursor:
 				execWithInt(data[2], c, uc.FileSetCursor)
-				break
+
 			case cmdFileGo:
 				fileGo(reader, uc, c)
-				break
+
 			case cmdFileRun:
 				exec(c, uc.FileRun)
-				break
+
 			}
-			break
+
 		case cmdExit:
-			return
-		default:
+			exit = true
 			break
+
+		default:
+
 		}
 	}
 	return

@@ -6,14 +6,14 @@ import (
 	"math"
 )
 
-func (m *model) GetDegrees(point []float64) (lengths []float64, err error) {
-	degrees, err := m.getDegrees(point)
+func (m *model) GetDegrees(point []float64) (degrees []float64, err error) {
+	degrees, err = m.getDegrees(point)
 	if err != nil {
 		return
 	}
 	for i := range degrees {
-		H := m.h * (degrees[i] - m.lengths[i]) / (2 * math.Pi * m.r)
-		lengths = append(lengths, (degrees[i]-H-degrees[i])/m.R/math.Pi*180)
+		H := m.motors[i].DrumH * (degrees[i] - m.lengths[i]) / (2 * math.Pi * m.motors[i].DrumR)
+		degrees[i] = (degrees[i] - H - degrees[i]) / m.motors[i].RollerR / math.Pi * 180
 	}
 	return
 }
@@ -26,18 +26,18 @@ func (m *model) getDegrees(point []float64) (degrees []float64, err error) {
 		return
 	}
 
-	for _, C := range m.C {
-		cosB := (point[0] - C[0]) /
-			(math.Sqrt(math.Pow(point[0]-C[0], 2) + math.Pow(point[1]-C[1], 2)))
-		sinB := (point[1] - C[1]) /
-			(math.Sqrt(math.Pow(point[0]-C[0], 2) + math.Pow(point[1]-C[1], 2)))
+	for i := range m.motors {
+		cosB := (point[0] - m.motors[i].ExitPoint[0]) /
+			(math.Sqrt(math.Pow(point[0]-m.motors[i].ExitPoint[0], 2) + math.Pow(point[1]-m.motors[i].ExitPoint[1], 2)))
+		sinB := (point[1] - m.motors[i].ExitPoint[1]) /
+			(math.Sqrt(math.Pow(point[0]-m.motors[i].ExitPoint[0], 2) + math.Pow(point[1]-m.motors[i].ExitPoint[1], 2)))
 
 		Cs := []float64{
-			C[0] + m.r*cosB,
-			C[1] + m.r*sinB,
-			C[2]}
+			m.motors[i].ExitPoint[0] + m.motors[i].RollerR*cosB,
+			m.motors[i].ExitPoint[1] + m.motors[i].RollerR*sinB,
+			m.motors[i].ExitPoint[2]}
 
-		cosE := m.r /
+		cosE := m.motors[i].RollerR /
 			math.Sqrt(math.Pow(point[0]-Cs[0], 2)+math.Pow(point[1]-Cs[1], 2)+math.Pow(point[2]-Cs[2], 2))
 
 		cosD := math.Sqrt(math.Pow(point[0]-Cs[0], 2)+math.Pow(point[1]-Cs[1], 2)) /
@@ -46,12 +46,12 @@ func (m *model) getDegrees(point []float64) (degrees []float64, err error) {
 		gamma := math.Acos(cosE) + math.Acos(cosD)
 
 		B := []float64{
-			Cs[0] + m.r*math.Cos(gamma)*cosB,
-			Cs[1] + m.r*math.Cos(gamma)*sinB,
-			Cs[2] + m.r*math.Sin(gamma)}
+			Cs[0] + m.motors[i].RollerR*math.Cos(gamma)*cosB,
+			Cs[1] + m.motors[i].RollerR*math.Cos(gamma)*sinB,
+			Cs[2] + m.motors[i].RollerR*math.Sin(gamma)}
 
 		degrees = append(degrees,
-			m.r*(math.Pi-gamma)+
+			m.motors[i].RollerR*(math.Pi-gamma)+
 				math.Sqrt(math.Pow(point[0]-B[0], 2)+math.Pow(point[1]-B[1], 2)+math.Pow(point[2]-B[2], 2)))
 	}
 	return

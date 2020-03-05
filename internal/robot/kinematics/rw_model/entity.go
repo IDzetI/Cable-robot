@@ -1,20 +1,23 @@
 package robot_kinematics_rw_model
 
+import robot_kinematics "github.com/IDzetI/Cable-robot/internal/robot/kinematics"
+
 type model struct {
-	h       float64
-	r       float64
-	R       float64
 	lengths []float64
-	C       [][]float64
+	motors  []Motor
 }
 
-func Init(h float64, r float64, R float64, C [][]float64) (m model, err error) {
-	m = model{
-		h: h,
-		r: r,
-		R: R,
-		C: C,
+type Motor struct {
+	DrumH     float64
+	DrumR     float64
+	RollerR   float64
+	ExitPoint []float64
+}
+
+func New(motors []Motor) (k robot_kinematics.Kinematics, err error) {
+	m := model{
+		motors: motors,
 	}
 	m.lengths, err = m.getDegrees([]float64{0, 0, 0})
-	return
+	return &m, err
 }

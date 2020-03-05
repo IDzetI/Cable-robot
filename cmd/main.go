@@ -1,39 +1,81 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"github.com/IDzetI/Cable-robot.git/internal/robot/controller/omron"
-	"github.com/IDzetI/Cable-robot.git/pkg/configs"
+	"github.com/IDzetI/Cable-robot/config"
+	"github.com/IDzetI/Cable-robot/internal/robot"
+	"github.com/IDzetI/Cable-robot/internal/robot/controller/extruder/smsd"
+	"github.com/IDzetI/Cable-robot/internal/robot/controller/test"
+	"github.com/IDzetI/Cable-robot/internal/robot/kinematics/rw_model"
+	robot_service_console "github.com/IDzetI/Cable-robot/internal/robot/service/console"
+	"github.com/IDzetI/Cable-robot/internal/robot/trajectory/v1"
 	"log"
-	"os"
 )
 
 func main() {
 	log.Println("Program starting...")
 
-	//Read config
-	log.Println("Read robot config...")
-	conf, err := configs.LoadConfig(defaultConfigPath)
-	for err != nil {
-		log.Println("Read config error: " + err.Error())
-		fmt.Println("Please enter config file path:")
-		reader := bufio.NewReader(os.Stdin)
-		//read line
-		path, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-		conf, err = configs.LoadConfig(path)
+	conf, err := config.Init()
+	if err != nil {
+		panic(err)
 	}
 
-	//initialize controller
-	address, err := conf.GetString(configRobotIp)
+	robotController, err := robot_controller_test.New()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	_, err = robot_controller_omron.Init(address)
+
+	robotCartesianSpaceTrajectory, err := robot_trajectory_v1.New(
+		conf.CartesianSpace.Speed,
+		conf.CartesianSpace.MinSpeed,
+		conf.CartesianSpace.Acceleration,
+		conf.CartesianSpace.Deceleration,
+		conf.Period,
+		conf.Workspace,
+	)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+
+	robotJoinSpaceTrajectory, err := robot_trajectory_v1.New(
+		conf.JoinSpace.Speed,
+		conf.JoinSpace.MinSpeed,
+		conf.JoinSpace.Acceleration,
+		conf.JoinSpace.Deceleration,
+		conf.Period,
+		conf.Workspace,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	var robotMotors []robot_kinematics_rw_model.Motor
+	for _, motor := range conf.Motors {
+		robotMotors = append(robotMotors, robot_kinematics_rw_model.Motor{
+			DrumH:     motor.Drum.H,
+			DrumR:     motor.Drum.R,
+			RollerR:   motor.RollerRadius,
+			ExitPoint: motor.ExitPoint,
+		})
+	}
+	robotKinematics, err := robot_kinematics_rw_model.New(robotMotors)
+	if err != nil {
+		panic(err)
+	}
+
+	robotExtruder, err := robot_extruder_smsd.New()
+	if err != nil {
+		return
+	}
+
+	robotUseCase := robot.New(
+		robotController,
+		robotCartesianSpaceTrajectory,
+		robotJoinSpaceTrajectory,
+		robotKinematics,
+		robotExtruder,
+	)
+
+	if err := robot_service_console.Start(robotUseCase); err != nil {
+		panic(err)
 	}
 }

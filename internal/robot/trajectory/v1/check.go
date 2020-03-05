@@ -3,18 +3,21 @@ package robot_trajectory_v1
 import (
 	"errors"
 	"fmt"
-	"github.com/IDzetI/Cable-robot.git/pkg/utils"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 )
 
-func checkPosition(position []float64, boarders [][]float64) (err error) {
+func (t *trajectory) checkPosition(position []float64) (err error) {
+	if len(t.position) != 3 {
+		return errors.New("please initialise robot position")
+	}
 	for i := range position {
-		if position[i] < boarders[i][0] || position[i] > boarders[i][1] {
+		if position[i] < t.workspace[i][0] || position[i] > t.workspace[i][1] {
 			return errors.New(
 				fmt.Sprintf(
-					"coordinate out of boarders: %f (%f,%f)",
+					"coordinate out of workspace: %f (%f,%f)",
 					position[i],
-					boarders[i][0],
-					boarders[i][1],
+					t.workspace[i][0],
+					t.workspace[i][1],
 				),
 			)
 		}
@@ -25,7 +28,7 @@ func checkPosition(position []float64, boarders [][]float64) (err error) {
 func checkBoarders(boarders [][]float64) (err error) {
 	for _, boarder := range boarders {
 		if len(boarder) != 2 || boarder[0] > boarder[1] {
-			return errors.New("invalid boarders: " + utils.ToString(boarder))
+			return errors.New("invalid workspace: " + utils.ToString(boarder))
 		}
 	}
 	return

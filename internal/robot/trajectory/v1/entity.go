@@ -8,19 +8,13 @@ type trajectory struct {
 
 	period float64
 
-	position []float64
-	boarders [][]float64
+	position  []float64
+	workspace [][]float64
 }
 
-func Init(speed, minSpeed, acceleration, deceleration, period float64,
-	position []float64, boarders [][]float64) (t *trajectory, err error) {
+func New(speed, minSpeed, acceleration, deceleration, period float64, workspace [][]float64) (t *trajectory, err error) {
 
-	err = checkBoarders(boarders)
-	if err != nil {
-		return
-	}
-
-	err = checkPosition(position, boarders)
+	err = checkBoarders(workspace)
 	if err != nil {
 		return
 	}
@@ -31,8 +25,7 @@ func Init(speed, minSpeed, acceleration, deceleration, period float64,
 		acceleration: acceleration,
 		deceleration: deceleration,
 		period:       period,
-		position:     position,
-		boarders:     boarders,
+		workspace:    workspace,
 	}
 
 	return
@@ -44,7 +37,7 @@ func (t *trajectory) SetPosition(position []float64) (err error) {
 		return
 	}
 
-	err = checkPosition(position, t.boarders)
+	err = t.checkPosition(position)
 	if err != nil {
 		return
 	}
@@ -69,13 +62,13 @@ func (t *trajectory) SetBoarders(boarders [][]float64) (err error) {
 	if err != nil {
 		return
 	}
-	t.boarders = boarders
+	t.workspace = boarders
 	return
 }
 
 func (t *trajectory) GetBoarders() (boarders [][]float64) {
 	if t != nil {
-		return t.boarders
+		return t.workspace
 	}
 	return
 }

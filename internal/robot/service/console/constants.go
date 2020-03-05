@@ -1,4 +1,4 @@
-package robot_ui_console
+package robot_service_console
 
 const (
 	cmdReadDegree = "dnow"

@@ -1,0 +1,62 @@
+ip: 192.168.250.1:9600
+period: 4e-3
+
+workspace:
+  [
+  [-4000,4000],
+  [-1700,1700],
+  [-200,1500]
+  ]
+
+cartesianSpace:
+  acceleration: 100
+  deceleration: 100
+  speed: 300
+  minSpeed: 10
+
+joinSpace:
+  acceleration: 50
+  deceleration: 50
+  speed: 100
+  minSpeed: 1
+
+motors:
+# motor 0
+- drum:
+    h: 5
+    r: 48
+  exitPoint:
+      - 4450
+      - -1930
+      - 2650
+  rollerRadius: 50
+
+# motor 1
+- drum:
+    h: 5
+    r: 48
+  exitPoint:
+    - -4430
+    - -1930
+    - 2650
+  rollerRadius: 50
+
+# motor 2
+- drum:
+    h: 5
+    r: 48
+  exitPoint:
+    - -4450
+    - 1930
+    - 2650
+  rollerRadius: 50
+
+# motor 3
+- drum:
+    h: 5
+    r: 48
+  exitPoint:
+    - 4450
+    - 1930
+    - 2650
+  rollerRadius: 50

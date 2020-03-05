@@ -1,14 +1,19 @@
 package robot_controller_omron
 
 import (
-	"github.com/IDzetI/Cable-robot.git/pkg/utils"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 )
 
-func (c *controller) SetLengths(lengths []float64) (err error) {
+func (c *controller) SendTrajectory(lengths [][]float64) (err error) {
+	panic("implement me")
+	//TODO
+}
+
+func (c *controller) SetDegrees(degrees []float64) (err error) {
 
 	//parse lengths
 	var data []uint16
-	for _, length := range lengths {
+	for _, length := range degrees {
 		for _, d := range utils.Float64Uint16(length) {
 			data = append(data, d)
 		}
