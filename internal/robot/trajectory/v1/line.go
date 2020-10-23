@@ -15,47 +15,43 @@ period in s
 
 returns trajectory
 */
-func (t *trajectory) Line(position []float64) (points [][]float64, err error) {
-	if t == nil {
-		err = errorEmptyObj()
-		return
-	}
-
-	err = t.checkPosition(position)
+func (t *trajectory) Line(position, newPosition []float64) (points [][]float64, extruderSpeed []float64, err error) {
+	err = t.checkPosition(newPosition)
 	if err != nil {
 		return
 	}
 
 	//remaining distance
-	S := utils.VectorLength(utils.VectorSub(&t.position, &position))
+	S := utils.VectorLength(utils.VectorSub(&position, &newPosition))
 
 	// set speeds, acceleration and deceleration
 	var acc []float64
 	var dec []float64
 	var v []float64
 	var minV []float64
-	for i := 0; i < utils.MinLength(&t.position, &position); i++ {
-		k := (position[i] - t.position[i]) / S
+	var cSpeed []float64
+	for i := 0; i < utils.MinLength(&position, &newPosition); i++ {
+		k := (newPosition[i] - position[i]) / S
 		acc = append(acc, t.acceleration*k)
 		dec = append(dec, -t.deceleration*k)
 		v = append(v, t.speed*k)
 		minV = append(minV, t.minSpeed*k)
+		cSpeed = append(cSpeed, 0)
 	}
 
 	//init helped variables
-	var cSpeed *[]float64
 	stage := 0
-
 	for S > e {
 
 		if stage == 0 {
-			cSpeed = utils.VectorSum(cSpeed, utils.VectorScalarMul(&t.period, &acc))
+
+			cSpeed = *utils.VectorSum(&cSpeed, utils.VectorScalarMul(&t.period, &acc))
 		}
 
-		moduleOfCurSpeed := utils.VectorLength(cSpeed)
+		moduleOfCurSpeed := utils.VectorLength(&cSpeed)
 
 		if moduleOfCurSpeed > t.speed {
-			cSpeed = &v
+			cSpeed = v
 			stage = 1
 		}
 
@@ -63,25 +59,31 @@ func (t *trajectory) Line(position []float64) (points [][]float64, err error) {
 			stage = 2
 		}
 		if stage == 2 {
-			cSpeed = utils.VectorSum(cSpeed, utils.VectorScalarMul(&t.period, &dec))
+			cSpeed = *utils.VectorSum(&cSpeed, utils.VectorScalarMul(&t.period, &dec))
 		}
 
-		if utils.VectorLength(cSpeed) < t.minSpeed && stage == 2 {
-			cSpeed = &minV
+		if utils.VectorLength(&cSpeed) < t.minSpeed && stage == 2 {
+			cSpeed = minV
 			stage = 3
 		}
 
-		t.position = *utils.VectorSum(&t.position, utils.VectorScalarMul(&t.period, cSpeed))
-		points = append(points, t.position)
+		position = *utils.VectorSum(&position, utils.VectorScalarMul(&t.period, &cSpeed))
 
-		if s := utils.VectorLength(utils.VectorSub(&t.position, &position)); s > S {
+		if s := utils.VectorLength(utils.VectorSub(&position, &newPosition)); s > S {
 			break
 		} else {
+			points = append(points, position)
+			extruderSpeed = append(extruderSpeed, utils.VectorLength(&cSpeed)/t.speed)
 			S = s
 		}
+
 	}
 
 	//add last point
-	points = append(points, position)
+	if last := len(points) - 1; points != nil && last >= 0 && extruderSpeed != nil && len(extruderSpeed) == len(points) {
+		points[last] = newPosition
+		extruderSpeed[last] = 0
+	}
+
 	return
 }

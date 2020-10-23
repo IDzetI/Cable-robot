@@ -16,3 +16,7 @@ func (c *controller) GetDegrees() (degrees []float64, err error) {
 	}
 	return
 }
+
+func (c *controller) GetPeriod() (period float64) {
+	return c.period
+}

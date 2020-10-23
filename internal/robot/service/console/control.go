@@ -31,6 +31,15 @@ func Start(uc robot.UseCase) (err error) {
 		data := strings.Split(line, " ")
 
 		switch data[0] {
+		case cmdStop:
+			go uc.Stop(c)
+
+		case cmdResume:
+			go uc.Resume(c)
+
+		case cmdReset:
+			go uc.Reset(c)
+
 		case cmdReadDegree:
 			lengths, err := uc.ReadDegrees()
 			if err != nil {
@@ -43,72 +52,91 @@ func Start(uc robot.UseCase) (err error) {
 			switch data[1] {
 
 			case cmdSetSpeed:
-				setSingleValue(data[2], uc.SetSpeedCartesianSpace)
+				go setSingleValue(data[2], uc.SetSpeedCartesianSpace)
 
 			case cmdSetMinSpeed:
-				setSingleValue(data[2], uc.SetMinSpeedCartesianSpace)
+				go setSingleValue(data[2], uc.SetMinSpeedCartesianSpace)
 
 			case cmdSetAcceleration:
-				setSingleValue(data[2], uc.SetAccelerationCartesianSpace)
+				go setSingleValue(data[2], uc.SetAccelerationCartesianSpace)
 
 			case cmdSetDeceleration:
-				setSingleValue(data[2], uc.SetDecelerationCartesianSpace)
+				go setSingleValue(data[2], uc.SetDecelerationCartesianSpace)
 
-			default:
+			case cmdSetExtruderSpeed:
+				go setSingleValue(data[2], uc.SetExtruderSpeed)
+
+			case cmdSetShift:
+				go setArrayValue(data[2:], uc.SetShift)
+			}
+
+		case cmdSetJoinSpace:
+			switch data[1] {
+
+			case cmdSetSpeed:
+				go setSingleValue(data[2], uc.SetSpeedJoinSpace)
+
+			case cmdSetMinSpeed:
+				go setSingleValue(data[2], uc.SetMinSpeedJoinSpace)
+
+			case cmdSetAcceleration:
+				go setSingleValue(data[2], uc.SetAccelerationJoinSpace)
+
+			case cmdSetDeceleration:
+				go setSingleValue(data[2], uc.SetDecelerationJoinSpace)
 			}
 
 		case cmdInit:
-			moveToPoint(data[1:], c, uc.MoveInJoinSpace)
+			go moveToPoint(data[1:], c, uc.MoveInJoinSpace)
 
 		case cmdMove:
-			moveToPoint(data[1:], c, uc.MoveInCartesianSpace)
+			go moveToPoint(data[1:], c, uc.MoveInCartesianSpace)
 
 		case cmdControl:
 			switch data[1] {
 
 			case cmdControlON:
-				exec(c, uc.ControlOn)
+				go exec(c, uc.ControlOn)
 
 			case cmdControlOFF:
-				exec(c, uc.ControlOff)
+				go exec(c, uc.ControlOff)
 
 			case cmdControlRESET:
-				exec(c, uc.ControlOff)
-				exec(c, uc.ControlOn)
+				go exec(c, uc.ControlOff)
+				go exec(c, uc.ControlOn)
 			}
 
 		case cmdFile:
 			switch data[1] {
 
 			case cmdFileLoad:
-				execWithString(data[2], c, uc.FileLoad)
+				go execWithString(data[2], c, uc.FileLoad)
 
 			case cmdFileInit:
-				exec(c, uc.FileInit)
+				go exec(c, uc.FileInit)
 
 			case cmdFileNext:
-				exec(c, uc.FileNext)
+				go exec(c, uc.FileNext)
 
 			case cmdFileCurrent:
-				exec(c, uc.FileCurrent)
+				go exec(c, uc.FileCurrent)
 
 			case cmdFilePrevious:
-				exec(c, uc.FilePrevious)
+				go exec(c, uc.FilePrevious)
 
 			case cmdFileSetCursor:
-				execWithInt(data[2], c, uc.FileSetCursor)
+				go execWithInt(data[2], c, uc.FileSetCursor)
 
 			case cmdFileGo:
 				fileGo(reader, uc, c)
 
 			case cmdFileRun:
-				exec(c, uc.FileRun)
+				go exec(c, uc.FileRun)
 
 			}
 
 		case cmdExit:
 			exit = true
-			break
 
 		default:
 
@@ -121,8 +149,9 @@ func fileGo(reader *bufio.Reader, uc robot.UseCase, c chan string) {
 	fmt.Println("press ENTER to next\n" +
 		"write p and press ENTER to go to previous position\n" +
 		"write q and press ENTER to exit from this mode")
-	for true {
+	for {
 		command, err := reader.ReadString('\n')
+		c <- command
 		if err != nil {
 			log.Println(err.Error())
 			return
@@ -161,16 +190,25 @@ func execWithInt(s string, c chan string, f func(int, chan string) error) {
 }
 
 func moveToPoint(strPoint []string, c chan string, f func([]float64, chan string) error) {
-	var point []float64
-	for _, s := range strPoint {
-		v, err := strconv.ParseFloat(s, 64)
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
-		point = append(point, v)
+	point, err := utils.ToFloatArray(strPoint)
+	if err != nil {
+		log.Println(err)
+		return
 	}
-	err := f(point, c)
+	err = f(point, c)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+}
+
+func setArrayValue(strValues []string, f func([]float64) error) {
+	values, err := utils.ToFloatArray(strValues)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = f(values)
 	if err != nil {
 		log.Println(err)
 		return
@@ -187,6 +225,8 @@ func setSingleValue(s string, f func(float64) error) {
 	if err != nil {
 		log.Println(err.Error())
 		return
+	} else {
+		log.Println("OK")
 	}
 }
 

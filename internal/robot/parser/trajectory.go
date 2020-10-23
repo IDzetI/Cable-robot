@@ -2,6 +2,7 @@ package robot_parser
 
 import (
 	"errors"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -9,8 +10,7 @@ import (
 
 type Rt struct{}
 
-func (rt *Rt) Read(file string) (trajectory [][]float64, err error) {
-	//read file
+func (rt *Rt) Read(file string, c chan string) (trajectory [][]float64, err error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return
@@ -18,6 +18,7 @@ func (rt *Rt) Read(file string) (trajectory [][]float64, err error) {
 	lines := strings.Split(string(data), "\n")
 
 	for i, line := range lines {
+		line = strings.ReplaceAll(line, "\r", "")
 		strValues := strings.Split(line, " ")
 		if len(strValues) != 3 {
 			err = errors.New("file corrupted: line " + strconv.Itoa(i) + " (" + line + ")")
@@ -33,6 +34,8 @@ func (rt *Rt) Read(file string) (trajectory [][]float64, err error) {
 			xyz = append(xyz, value)
 		}
 		trajectory = append(trajectory, xyz)
+		c <- "OK " + utils.ToString(xyz)
 	}
+	c <- "load complete"
 	return
 }

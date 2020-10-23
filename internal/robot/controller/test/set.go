@@ -2,15 +2,17 @@ package robot_controller_test
 
 import (
 	"log"
+	"time"
 )
 
-func (c *controller) SendTrajectory(lengths [][]float64) (err error) {
-	panic("implement me")
-	//TODO
+func (c *controller) SendTrajectory(degrees [][]float64) (err error) {
+	log.Println("controller set degrees", degrees)
+	return
 }
 
 func (c *controller) SetDegrees(degrees []float64) (err error) {
-	log.Println("controller set degree", degrees)
+	//log.Println(time.Now(),"controller set degree", degrees)
+	time.Sleep(time.Millisecond)
 	return
 }
 

@@ -1,11 +1,13 @@
 package utils
 
-import "math"
+import (
+	"math"
+)
 
 func VectorLength(a *[]float64) float64 {
 	var sum float64
 	for _, v := range *a {
-		sum += v
+		sum += math.Pow(v, 2)
 	}
 	return math.Sqrt(sum)
 }

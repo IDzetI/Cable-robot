@@ -3,11 +3,18 @@ package robot_service_console
 const (
 	cmdReadDegree = "dnow"
 
-	cmdSet             = "set"
-	cmdSetSpeed        = "speed"
-	cmdSetMinSpeed     = "minspeed"
-	cmdSetAcceleration = "acc"
-	cmdSetDeceleration = "dec"
+	cmdSet              = "set"
+	cmdSetJoinSpace     = "setj"
+	cmdSetSpeed         = "speed"
+	cmdSetMinSpeed      = "minspeed"
+	cmdSetAcceleration  = "acc"
+	cmdSetDeceleration  = "dec"
+	cmdSetExtruderSpeed = "espeed"
+	cmdSetShift         = "shift"
+
+	cmdStop   = "stop"
+	cmdResume = "resume"
+	cmdReset  = "reset"
 
 	cmdInit = "init"
 	cmdMove = "move"

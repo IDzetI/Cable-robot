@@ -7,8 +7,8 @@ import (
 )
 
 func (t *trajectory) checkPosition(position []float64) (err error) {
-	if len(t.position) != 3 {
-		return errors.New("please initialise robot position")
+	if len(position) != len(t.workspace) {
+		return errors.New("invalid space shape")
 	}
 	for i := range position {
 		if position[i] < t.workspace[i][0] || position[i] > t.workspace[i][1] {

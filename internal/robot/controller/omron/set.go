@@ -1,12 +1,48 @@
 package robot_controller_omron
 
 import (
+	"fmt"
 	"github.com/IDzetI/Cable-robot/pkg/utils"
+	"time"
 )
 
 func (c *controller) SendTrajectory(lengths [][]float64) (err error) {
-	panic("implement me")
-	//TODO
+	steps := len(lengths)
+
+	err = c.SetDegrees(lengths[0])
+	if err != nil {
+		return
+	}
+
+	err = c.ControlON()
+	if err != nil {
+		return
+	}
+
+	//create timer
+	period := time.Duration(c.period) * time.Second
+	done := make(chan bool, 1)
+	ticker := time.NewTicker(period)
+
+	// current line
+	counter := 0
+	fmt.Println("robot move")
+	go func() {
+		for counter < steps {
+			select {
+			case <-ticker.C:
+				err = c.SetDegrees(lengths[counter])
+				if err != nil {
+					done <- false
+					return
+				}
+				counter++
+			}
+		}
+		done <- true
+	}()
+	<-done
+	return
 }
 
 func (c *controller) SetDegrees(degrees []float64) (err error) {

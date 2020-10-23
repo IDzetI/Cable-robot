@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/IDzetI/Cable-robot/config"
 	"github.com/IDzetI/Cable-robot/internal/robot"
-	"github.com/IDzetI/Cable-robot/internal/robot/controller/extruder/smsd"
 	"github.com/IDzetI/Cable-robot/internal/robot/controller/test"
+	"github.com/IDzetI/Cable-robot/internal/robot/extruder/smsd"
 	"github.com/IDzetI/Cable-robot/internal/robot/kinematics/rw_model"
 	robot_service_console "github.com/IDzetI/Cable-robot/internal/robot/service/console"
 	"github.com/IDzetI/Cable-robot/internal/robot/trajectory/v1"
@@ -14,40 +14,19 @@ import (
 func main() {
 	log.Println("Program starting...")
 
+	//read config from config.yaml
 	conf, err := config.Init()
 	if err != nil {
 		panic(err)
 	}
 
+	//initialise robot controller
 	robotController, err := robot_controller_test.New()
 	if err != nil {
 		panic(err)
 	}
 
-	robotCartesianSpaceTrajectory, err := robot_trajectory_v1.New(
-		conf.CartesianSpace.Speed,
-		conf.CartesianSpace.MinSpeed,
-		conf.CartesianSpace.Acceleration,
-		conf.CartesianSpace.Deceleration,
-		conf.Period,
-		conf.Workspace,
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	robotJoinSpaceTrajectory, err := robot_trajectory_v1.New(
-		conf.JoinSpace.Speed,
-		conf.JoinSpace.MinSpeed,
-		conf.JoinSpace.Acceleration,
-		conf.JoinSpace.Deceleration,
-		conf.Period,
-		conf.Workspace,
-	)
-	if err != nil {
-		panic(err)
-	}
-
+	//initialise robot kinematic model
 	var robotMotors []robot_kinematics_rw_model.Motor
 	for _, motor := range conf.Motors {
 		robotMotors = append(robotMotors, robot_kinematics_rw_model.Motor{
@@ -62,11 +41,44 @@ func main() {
 		panic(err)
 	}
 
-	robotExtruder, err := robot_extruder_smsd.New()
+	//initialise trajectory planing in cartesian space
+	robotCartesianSpaceTrajectory, err := robot_trajectory_v1.New(
+		conf.CartesianSpace.Speed,
+		conf.CartesianSpace.MinSpeed,
+		conf.CartesianSpace.Acceleration,
+		conf.CartesianSpace.Deceleration,
+		conf.Period,
+		conf.Workspace,
+	)
 	if err != nil {
-		return
+		panic(err)
 	}
 
+	//initialise tra
+	robotJoinSpaceTrajectory, err := robot_trajectory_v1.New(
+		conf.JoinSpace.Speed,
+		conf.JoinSpace.MinSpeed,
+		conf.JoinSpace.Acceleration,
+		conf.JoinSpace.Deceleration,
+		conf.Period,
+		[][]float64{
+			{-5000, 5000},
+			{-5000, 5000},
+			{-5000, 5000},
+			{-5000, 5000},
+		},
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	//initialise extruder
+	robotExtruder, err := robot_extruder_smsd.New(conf.Extruder.Port)
+	if err != nil {
+		panic(err)
+	}
+
+	//initialise robot
 	robotUseCase := robot.New(
 		robotController,
 		robotCartesianSpaceTrajectory,
@@ -75,6 +87,7 @@ func main() {
 		robotExtruder,
 	)
 
+	//start robot console control
 	if err := robot_service_console.Start(robotUseCase); err != nil {
 		panic(err)
 	}

@@ -1,12 +1,11 @@
 package robot
 
 import (
-	"errors"
 	"github.com/IDzetI/Cable-robot/internal/robot/controller"
-	robot_extruder "github.com/IDzetI/Cable-robot/internal/robot/controller/extruder"
+	"github.com/IDzetI/Cable-robot/internal/robot/extruder"
 	"github.com/IDzetI/Cable-robot/internal/robot/kinematics"
-	"github.com/IDzetI/Cable-robot/internal/robot/parser"
 	"github.com/IDzetI/Cable-robot/internal/robot/trajectory"
+	"sync"
 )
 
 type UseCase struct {
@@ -15,37 +14,30 @@ type UseCase struct {
 	trajectoryJoinSpace      robot_trajectory.Trajectory
 	kinematics               robot_kinematics.Kinematics
 	extruder                 robot_extruder.Extruder
-	file                     file
+	file                     *file
+
+	shift       []float64
+	position    []float64
+	movingMutex sync.Mutex
+	resetFlag   bool
+	stopFlag    bool
+
+	commands chan func()
 }
 
 func New(c robot_controller.Controller,
 	tc, tj robot_trajectory.Trajectory,
 	k robot_kinematics.Kinematics,
 	e robot_extruder.Extruder) (uc UseCase) {
-	return UseCase{
+	uc = UseCase{
 		controller:               c,
 		trajectoryCartesianSpace: tc,
 		trajectoryJoinSpace:      tj,
 		kinematics:               k,
 		extruder:                 e,
-		file: file{
-			trajectory: [][]float64{},
-			cursor:     0,
-			plt:        nil,
-			tr:         robot_parser.Rt{},
-		},
+		commands:                 make(chan func(), 1024),
 	}
-}
-
-func (uc *UseCase) ConfigPLT(up, down float64, start []float64) (err error) {
-	if len(start) != 3 {
-		return errors.New("invalid start point")
-	}
-	uc.file.plt = &robot_parser.Plt{
-		Up:    up,
-		Down:  down,
-		Start: start,
-	}
+	go uc.execute()
 	return
 }
 

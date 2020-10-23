@@ -13,7 +13,7 @@ func (m *model) GetDegrees(point []float64) (degrees []float64, err error) {
 	}
 	for i := range degrees {
 		H := m.motors[i].DrumH * (degrees[i] - m.lengths[i]) / (2 * math.Pi * m.motors[i].DrumR)
-		degrees[i] = (degrees[i] - H - degrees[i]) / m.motors[i].RollerR / math.Pi * 180
+		degrees[i] = (degrees[i] - H - m.lengths[i]) / m.motors[i].DrumR / math.Pi * 180
 	}
 	return
 }

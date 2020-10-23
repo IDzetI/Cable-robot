@@ -2,10 +2,7 @@ package robot_trajectory
 
 type Trajectory interface {
 	//Init(speed, minSpeed, acceleration, deceleration, period float64, position[]float64, boarders[][]float64)(err error)
-	Line(position []float64) (points [][]float64, err error)
-
-	SetPosition(position []float64) (err error)
-	GetPosition() (position []float64)
+	Line(position, newPosition []float64) (points [][]float64, extruderSpeed []float64, err error)
 
 	SetBoarders(boarders [][]float64) (err error)
 	GetBoarders() (boarders [][]float64)

@@ -2,6 +2,7 @@ package robot_parser
 
 import (
 	"errors"
+	"github.com/IDzetI/Cable-robot/pkg/utils"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -13,7 +14,7 @@ type Plt struct {
 	Start []float64
 }
 
-func (plt *Plt) Read(file string) (trajectory [][]float64, err error) {
+func (plt *Plt) Read(file string, c chan string) (trajectory [][]float64, err error) {
 	if len(plt.Start) != 3 {
 		plt.Start = []float64{0, 0, 0}
 	}
@@ -51,7 +52,9 @@ func (plt *Plt) Read(file string) (trajectory [][]float64, err error) {
 		}
 		current = []float64{x, y, z}
 		trajectory = append(trajectory, current)
+		c <- "OK " + utils.ToString(current)
 	}
+	c <- "load complete"
 	return
 }
 

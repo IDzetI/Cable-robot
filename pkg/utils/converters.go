@@ -2,7 +2,9 @@ package utils
 
 import (
 	"encoding/json"
+	"log"
 	"math"
+	"strconv"
 	"unsafe"
 )
 
@@ -20,4 +22,16 @@ func ToString(i interface{}) string {
 		return err.Error()
 	}
 	return string(b)
+}
+
+func ToFloatArray(strValues []string) (floatValues []float64, err error) {
+	for _, s := range strValues {
+		if v, err := strconv.ParseFloat(s, 64); err != nil {
+			log.Println(err.Error())
+			break
+		} else {
+			floatValues = append(floatValues, v)
+		}
+	}
+	return
 }

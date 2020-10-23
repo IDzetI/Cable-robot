@@ -5,18 +5,15 @@ import (
 )
 
 type controller struct {
-	robot *fins.Client
+	robot  *fins.Client
+	period float64
 }
 
-func Init(address string) (controller controller, err error) {
-	client, err := fins.NewClient(address)
+func New(period float64, address string) (controller controller, err error) {
+	controller.robot, err = fins.NewClient(address)
 	if err != nil {
 		return
 	}
-	controller.setClient(client)
+	controller.period = period
 	return
-}
-
-func (c *controller) setClient(client *fins.Client) {
-	c.robot = client
 }

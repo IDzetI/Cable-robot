@@ -60,3 +60,6 @@ motors:
     - 1930
     - 2650
   rollerRadius: 50
+
+extruder:
+  port: COM5

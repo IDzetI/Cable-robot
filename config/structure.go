@@ -10,6 +10,8 @@ type Config struct {
 	Workspace [][]float64 `json:"workspace"`
 
 	Motors []Motor `yaml:"motors"`
+
+	Extruder Extruder `yaml:"extruder"`
 }
 
 type Trajectory struct {
@@ -28,4 +30,8 @@ type Motor struct {
 type Drum struct {
 	H float64 `yaml:"h"`
 	R float64 `yaml:"r"`
+}
+
+type Extruder struct {
+	Port string `yaml:"port"`
 }
