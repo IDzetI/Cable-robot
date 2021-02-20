@@ -13,12 +13,10 @@ func (e extruder) SetSpeed(speed float64) (err error) {
 
 func (e extruder) Stop() (err error) {
 	log.Println(time.Now(), "extrude stop")
-	//panic("implement me")
 	return
 }
 
 func (e extruder) Start() (err error) {
 	log.Println(time.Now(), "extrude stop")
-	//panic("implement me")
 	return
 }

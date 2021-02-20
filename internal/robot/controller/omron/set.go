@@ -54,7 +54,6 @@ func (c *controller) SetDegrees(degrees []float64) (err error) {
 			data = append(data, d)
 		}
 	}
-
 	//write data
 	return c.robot.WriteDNoResponse(cEncodersAddress, data)
 }

@@ -54,7 +54,7 @@ func main() {
 		panic(err)
 	}
 
-	//initialise tra
+	//initialise trajectory
 	robotJoinSpaceTrajectory, err := robot_trajectory_v1.New(
 		conf.JoinSpace.Speed,
 		conf.JoinSpace.MinSpeed,
