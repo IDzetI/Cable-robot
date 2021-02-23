@@ -18,37 +18,47 @@ type UseCase struct {
 
 	shift       []float64
 	position    []float64
+	speed       []float64
 	movingMutex sync.Mutex
 	resetFlag   bool
 	stopFlag    bool
 
-	commands chan func()
+	commands             chan func()
+	externalInterception int64
 }
 
 func New(c robot_controller.Controller,
 	tc, tj robot_trajectory.Trajectory,
-	k robot_kinematics.Kinematics,
-	e robot_extruder.Extruder) (uc UseCase) {
+	k robot_kinematics.Kinematics) (uc UseCase) {
 	uc = UseCase{
 		controller:               c,
 		trajectoryCartesianSpace: tc,
 		trajectoryJoinSpace:      tj,
 		kinematics:               k,
-		extruder:                 e,
 		commands:                 make(chan func(), 1024),
 	}
 	go uc.execute()
 	return
 }
 
-func (uc *UseCase) ReadDegrees() (degrees []float64, err error) {
-	return uc.controller.GetDegrees()
+func (u *UseCase) GetSpeed() []float64 {
+	if u.speed == nil {
+		return []float64{0, 0, 0}
+	} else {
+		return u.speed
+	}
 }
 
-func (uc *UseCase) ControlOn(c chan string) (err error) {
-	return uc.controller.ControlON()
+func (u *UseCase) ReadDegrees() (degrees []float64, err error) {
+	return u.controller.GetDegrees()
 }
 
-func (uc *UseCase) ControlOff(c chan string) (err error) {
-	return uc.controller.ControlOFF()
+func (u *UseCase) ControlOn(c chan string) (err error) {
+	c <- "Control starting"
+	return u.controller.ControlON()
+}
+
+func (u *UseCase) ControlOff(c chan string) (err error) {
+	c <- "Control off"
+	return u.controller.ControlOFF()
 }

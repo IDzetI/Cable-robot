@@ -3,6 +3,7 @@ package robot
 import (
 	"errors"
 	"github.com/IDzetI/Cable-robot/internal/robot/parser"
+	"strconv"
 	"strings"
 )
 
@@ -13,11 +14,11 @@ type file struct {
 	tr         robot_parser.Rt
 }
 
-func (uc *UseCase) ConfigPLT(up, down float64, start []float64) (err error) {
+func (u *UseCase) ConfigPLT(up, down float64, start []float64) (err error) {
 	if len(start) != 3 {
 		return errors.New("invalid start point")
 	}
-	uc.file.plt = &robot_parser.Plt{
+	u.file.plt = &robot_parser.Plt{
 		Up:    up,
 		Down:  down,
 		Start: start,
@@ -25,9 +26,9 @@ func (uc *UseCase) ConfigPLT(up, down float64, start []float64) (err error) {
 	return
 }
 
-func (uc *UseCase) FileLoad(fileString string, c chan string) (err error) {
+func (u *UseCase) FileLoad(fileString string, c chan string) (err error) {
 
-	uc.file = &file{}
+	u.file = &file{}
 
 	fileName := strings.Split(fileString, ".")
 
@@ -35,14 +36,14 @@ func (uc *UseCase) FileLoad(fileString string, c chan string) (err error) {
 
 	switch fileName[len(fileName)-1] {
 	case "plt":
-		if uc.file.plt == nil {
+		if u.file.plt == nil {
 			err = errors.New("plt config is empty")
 			return
 		}
-		trajectory, err = uc.file.plt.Read(fileString, c)
+		trajectory, err = u.file.plt.Read(fileString, c)
 
 	case "rt":
-		trajectory, err = uc.file.tr.Read(fileString, c)
+		trajectory, err = u.file.tr.Read(fileString, c)
 
 	default:
 		err = errors.New("incorrect file extension")
@@ -52,53 +53,54 @@ func (uc *UseCase) FileLoad(fileString string, c chan string) (err error) {
 	if err != nil {
 		return
 	}
-	uc.file.trajectory = trajectory
-	uc.file.cursor = 0
+	u.file.trajectory = trajectory
+	u.file.cursor = 0
 	return
 }
 
-func (uc *UseCase) FileInit(c chan string) (err error) {
-	return uc.MoveInJoinSpace(uc.file.trajectory[uc.file.cursor], c)
+func (u *UseCase) FileInit(c chan string) (err error) {
+	return u.MoveInJoinSpace(u.file.trajectory[u.file.cursor], c)
 }
 
-func (uc *UseCase) FileNext(c chan string) (err error) {
-	err = uc.FileSetCursor((uc.file.cursor+1)%len(uc.file.trajectory), c)
+func (u *UseCase) FileNext(c chan string) (err error) {
+	err = u.FileSetCursor((u.file.cursor+1)%len(u.file.trajectory), c)
 	if err != nil {
 		return
 	}
-	return uc.FileCurrent(c)
+	return u.FileCurrent(c)
 }
 
-func (uc *UseCase) FileCurrent(c chan string) (err error) {
-	return uc.MoveInCartesianSpace(uc.file.trajectory[uc.file.cursor], c)
+func (u *UseCase) FileCurrent(c chan string) (err error) {
+	return u.MoveInCartesianSpace(u.file.trajectory[u.file.cursor], c)
 }
 
-func (uc *UseCase) FilePrevious(c chan string) (err error) {
-	err = uc.FileSetCursor((uc.file.cursor+len(uc.file.trajectory)-1)%len(uc.file.trajectory), c)
+func (u *UseCase) FilePrevious(c chan string) (err error) {
+	err = u.FileSetCursor((u.file.cursor+len(u.file.trajectory)-1)%len(u.file.trajectory), c)
 	if err != nil {
 		return
 	}
-	return uc.FileCurrent(c)
+	return u.FileCurrent(c)
 }
 
-func (uc *UseCase) FileSetCursor(i int, c chan string) (err error) {
-	if uc.file.trajectory == nil {
+func (u *UseCase) FileSetCursor(i int, c chan string) (err error) {
+	if u.file.trajectory == nil {
 		return errors.New("trajectory is empty")
 	}
-	if len(uc.file.trajectory) < i {
+	if len(u.file.trajectory) < i {
 		return errors.New("invalid cursor value")
 	}
-	uc.file.cursor = i
+	u.file.cursor = i
+	c <- "Cursor = " + strconv.Itoa(u.file.cursor)
 	return
 }
 
-func (uc *UseCase) FileRun(c chan string) (err error) {
+func (u *UseCase) FileRun(c chan string) (err error) {
 	for true {
-		err = uc.FileNext(c)
+		err = u.FileNext(c)
 		if err != nil {
 			return
 		}
-		if uc.file.cursor == 0 {
+		if u.file.cursor == 0 {
 			break
 		}
 	}

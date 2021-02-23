@@ -3,6 +3,7 @@ module github.com/IDzetI/Cable-robot
 go 1.14
 
 require (
+	github.com/gin-gonic/gin v1.6.3
 	github.com/stretchr/testify v1.4.0
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect

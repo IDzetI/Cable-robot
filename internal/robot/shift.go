@@ -5,22 +5,22 @@ import (
 	"strconv"
 )
 
-func (uc *UseCase) SetShift(shift []float64) (err error) {
+func (u *UseCase) SetShift(shift []float64) (err error) {
 	if len(shift) != 3 {
 		return errors.New("invalid shift shape: must 3 get " + strconv.Itoa(len(shift)))
 	}
-	uc.shift = shift
+	u.shift = shift
 	return
 }
 
-func (uc *UseCase) GetShift() (shift []float64) {
-	return uc.shift
+func (u *UseCase) GetShift() (shift []float64) {
+	return u.shift
 }
 
-func (uc *UseCase) shiftPoint(p *[]float64) {
-	if uc.shift != nil && p != nil && len(*p) >= len(uc.shift) {
-		for i := range uc.shift {
-			(*p)[i] += uc.shift[i]
+func (u *UseCase) shiftPoint(p *[]float64) {
+	if u.shift != nil && p != nil && len(*p) >= len(u.shift) {
+		for i := range u.shift {
+			(*p)[i] += u.shift[i]
 		}
 	}
 }

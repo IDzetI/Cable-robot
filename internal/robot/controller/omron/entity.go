@@ -1,6 +1,7 @@
 package robot_controller_omron
 
 import (
+	robot_controller "github.com/IDzetI/Cable-robot/internal/robot/controller"
 	"github.com/IDzetI/Cable-robot/pkg/fins"
 )
 
@@ -9,11 +10,13 @@ type controller struct {
 	period float64
 }
 
-func New(period float64, address string) (controller controller, err error) {
-	controller.robot, err = fins.NewClient(address)
+func New(period float64, address string) (c robot_controller.Controller, err error) {
+	contr := controller{
+		period: period,
+	}
+	contr.robot, err = fins.NewClient(address)
 	if err != nil {
 		return
 	}
-	controller.period = period
-	return
+	return &contr, nil
 }

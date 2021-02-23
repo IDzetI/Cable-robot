@@ -3,10 +3,9 @@ package main
 import (
 	"github.com/IDzetI/Cable-robot/config"
 	"github.com/IDzetI/Cable-robot/internal/robot"
-	"github.com/IDzetI/Cable-robot/internal/robot/controller/test"
-	"github.com/IDzetI/Cable-robot/internal/robot/extruder/smsd"
+	robot_controller_test "github.com/IDzetI/Cable-robot/internal/robot/controller/test"
 	"github.com/IDzetI/Cable-robot/internal/robot/kinematics/rw_model"
-	robot_service_console "github.com/IDzetI/Cable-robot/internal/robot/service/console"
+	robot_service_rest "github.com/IDzetI/Cable-robot/internal/robot/service/rest"
 	"github.com/IDzetI/Cable-robot/internal/robot/trajectory/v1"
 	"log"
 )
@@ -21,6 +20,7 @@ func main() {
 	}
 
 	//initialise robot controller
+	//robotController, err := robot_controller_omron.New(conf.Period,conf.Ip)
 	robotController, err := robot_controller_test.New()
 	if err != nil {
 		panic(err)
@@ -73,10 +73,10 @@ func main() {
 	}
 
 	//initialise extruder
-	robotExtruder, err := robot_extruder_smsd.New(conf.Extruder.Port)
-	if err != nil {
-		panic(err)
-	}
+	//robotExtruder, err := robot_extruder_smsd.New(conf.Extruder.Port)
+	//if err != nil {
+	//	panic(err)
+	//}
 
 	//initialise robot
 	robotUseCase := robot.New(
@@ -84,11 +84,10 @@ func main() {
 		robotCartesianSpaceTrajectory,
 		robotJoinSpaceTrajectory,
 		robotKinematics,
-		robotExtruder,
 	)
 
 	//start robot console control
-	if err := robot_service_console.Start(robotUseCase); err != nil {
+	if err := robot_service_rest.New(&robotUseCase).Start(); err != nil {
 		panic(err)
 	}
 }

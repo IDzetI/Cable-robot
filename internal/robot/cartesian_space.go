@@ -6,31 +6,31 @@ import (
 	"github.com/IDzetI/Cable-robot/pkg/utils"
 )
 
-func (uc *UseCase) SetSpeedCartesianSpace(v float64) (err error) {
-	return uc.trajectoryCartesianSpace.SetSpeed(v)
+func (u *UseCase) SetSpeedCartesianSpace(v float64) (err error) {
+	return u.trajectoryCartesianSpace.SetSpeed(v)
 }
 
-func (uc *UseCase) SetMinSpeedCartesianSpace(v float64) (err error) {
-	return uc.trajectoryCartesianSpace.SetMinSpeed(v)
+func (u *UseCase) SetMinSpeedCartesianSpace(v float64) (err error) {
+	return u.trajectoryCartesianSpace.SetMinSpeed(v)
 }
 
-func (uc *UseCase) SetAccelerationCartesianSpace(v float64) (err error) {
-	return uc.trajectoryCartesianSpace.SetAcceleration(v)
+func (u *UseCase) SetAccelerationCartesianSpace(v float64) (err error) {
+	return u.trajectoryCartesianSpace.SetAcceleration(v)
 }
 
-func (uc *UseCase) SetDecelerationCartesianSpace(v float64) (err error) {
-	return uc.trajectoryCartesianSpace.SetDeceleration(v)
+func (u *UseCase) SetDecelerationCartesianSpace(v float64) (err error) {
+	return u.trajectoryCartesianSpace.SetDeceleration(v)
 }
 
-func (uc *UseCase) MoveInCartesianSpace(point []float64, c chan string) (err error) {
-	if uc.position == nil {
+func (u *UseCase) MoveInCartesianSpace(point []float64, c chan string) (err error) {
+	if u.position == nil {
 		return errors.New("please initialize robot position")
 	}
-	uc.commands <- uc.moveInCartesianSpace(point, c)
+	u.commands <- u.moveInCartesianSpace(point, c)
 	return
 }
 
-func (uc *UseCase) moveInCartesianSpace(point []float64, c chan string) func() {
+func (u *UseCase) moveInCartesianSpace(point []float64, c chan string) func() {
 	return func() {
 
 		//check print condition
@@ -38,11 +38,11 @@ func (uc *UseCase) moveInCartesianSpace(point []float64, c chan string) func() {
 		point = point[:3]
 
 		//shift point
-		uc.shiftPoint(&point)
+		u.shiftPoint(&point)
 
-		fmt.Println("move from", uc.position, "to", point)
+		fmt.Println("move from", u.position, "to", point)
 		//get trajectory
-		trajectory, extruderSpeed, err := uc.trajectoryCartesianSpace.Line(uc.position, point)
+		trajectory, extruderSpeed, err := u.trajectoryCartesianSpace.Line(u.position, point)
 		if err != nil {
 			c <- err.Error()
 			return
@@ -52,7 +52,7 @@ func (uc *UseCase) moveInCartesianSpace(point []float64, c chan string) func() {
 		var degreesTrajectory [][]float64
 		for _, p := range trajectory {
 			var degrees []float64
-			degrees, err = uc.kinematics.GetDegrees(p)
+			degrees, err = u.kinematics.GetDegrees(p)
 			if err != nil {
 				return
 			}
@@ -60,7 +60,7 @@ func (uc *UseCase) moveInCartesianSpace(point []float64, c chan string) func() {
 		}
 
 		c <- "robot move to " + utils.ToString(point)
-		err = uc.sendTrajectory(trajectory, degreesTrajectory, extruderSpeed, printing)
+		err = u.sendTrajectory(trajectory, degreesTrajectory, extruderSpeed, printing)
 		if err != nil {
 			c <- err.Error()
 			return

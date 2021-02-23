@@ -11,13 +11,13 @@ workspace:
 cartesianSpace:
   acceleration: 100
   deceleration: 100
-  speed: 300
+  speed: 50
   minSpeed: 10
 
 joinSpace:
   acceleration: 50
   deceleration: 50
-  speed: 100
+  speed: 50
   minSpeed: 1
 
 motors:

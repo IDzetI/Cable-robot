@@ -7,48 +7,50 @@ import (
 	"time"
 )
 
-func (uc *UseCase) execute() {
+func (u *UseCase) execute() {
 	func() {
-		for f := range uc.commands {
+		for f := range u.commands {
 			f()
 		}
 	}()
 }
 
-func (uc *UseCase) Stop(c chan string) {
-	uc.movingMutex.Lock()
-	err := uc.extruder.Stop()
-	if err != nil {
-		c <- err.Error()
-	}
-	uc.stopFlag = true
+func (u *UseCase) Stop(c chan string) {
+	u.movingMutex.Lock()
+	//err := uc.extruder.Stop()
+	//if err != nil {
+	//	c <- err.Error()
+	//}
+	c <- "robot pause"
+	u.stopFlag = true
 }
 
-func (uc *UseCase) Resume(c chan string) {
-	if uc.stopFlag {
-		uc.stopFlag = false
-		uc.movingMutex.Unlock()
-		err := uc.extruder.Start()
-		if err != nil {
-			c <- err.Error()
-		}
+func (u *UseCase) Resume(c chan string) {
+	if u.stopFlag {
+		u.stopFlag = false
+		u.movingMutex.Unlock()
+		//err := uc.extruder.Start()
+		//if err != nil {
+		//	c <- err.Error()
+		//}
+		c <- "robot resume"
 	}
 }
 
-func (uc *UseCase) Reset(c chan string) {
-	uc.resetFlag = true
-	if uc.stopFlag {
-		uc.movingMutex.Unlock()
+func (u *UseCase) Reset(c chan string) {
+	u.resetFlag = true
+	if u.stopFlag {
+		u.movingMutex.Unlock()
 	}
-	uc.stopFlag = false
+	u.stopFlag = false
 	go func() {
 		time.Sleep(time.Second)
-		uc.resetFlag = false
+		u.resetFlag = false
 		c <- "reset done"
 	}()
 }
 
-func (uc *UseCase) sendTrajectory(positions, degrees [][]float64, extruderSpeeds []float64, print bool) (err error) {
+func (u *UseCase) sendTrajectory(positions, degrees [][]float64, extruderSpeeds []float64, print bool) (err error) {
 
 	count := len(degrees)
 	if len(positions) != count && count != len(extruderSpeeds) {
@@ -58,18 +60,18 @@ func (uc *UseCase) sendTrajectory(positions, degrees [][]float64, extruderSpeeds
 			strconv.Itoa(len(extruderSpeeds)) + " ")
 	}
 	if count > 0 {
-		if err := uc.controller.SetDegrees(degrees[0]); err != nil {
+		if err := u.controller.SetDegrees(degrees[0]); err != nil {
 			return err
 		}
 	}
 
-	if err := uc.controller.ControlON(); err != nil {
+	if err := u.controller.ControlON(); err != nil {
 		return err
 	}
 
 	//create timer
 	done := make(chan bool, 1)
-	ticker := time.NewTicker(time.Duration(uc.controller.GetPeriod()*1e+6) * time.Microsecond)
+	ticker := time.NewTicker(time.Duration(u.controller.GetPeriod()*1e+6) * time.Microsecond)
 
 	// current line
 	counter := 0
@@ -78,26 +80,25 @@ func (uc *UseCase) sendTrajectory(positions, degrees [][]float64, extruderSpeeds
 			select {
 			case <-ticker.C:
 				counter++
-				uc.movingMutex.Lock()
-				if counter < count && !uc.resetFlag {
-
+				u.movingMutex.Lock()
+				if counter < count && !u.resetFlag {
 					go func() {
-						if err := uc.controller.SetDegrees(degrees[counter]); err != nil {
+						if err := u.controller.SetDegrees(degrees[counter]); err != nil {
 							log.Println("sendTrajectory: " + err.Error())
 						} else {
-							uc.position = positions[counter]
+							u.position = positions[counter]
 						}
-						uc.movingMutex.Unlock()
+						u.movingMutex.Unlock()
 					}()
-					if print {
-						go func() {
-							if err := uc.extruder.SetSpeed(extruderSpeeds[counter]); err != nil {
-								log.Println("sendTrajectory: " + err.Error())
-							}
-						}()
-					}
+					//if print {
+					//	go func() {
+					//		if err := uc.extruder.SetSpeed(extruderSpeeds[counter]); err != nil {
+					//			log.Println("sendTrajectory: " + err.Error())
+					//		}
+					//	}()
+					//}
 				} else {
-					uc.movingMutex.Unlock()
+					u.movingMutex.Unlock()
 					done <- true
 					return
 				}
@@ -108,22 +109,22 @@ func (uc *UseCase) sendTrajectory(positions, degrees [][]float64, extruderSpeeds
 	return
 }
 
-func (uc *UseCase) sendInitialiseTrajectory(degrees [][]float64, point []float64) (err error) {
+func (u *UseCase) sendInitialiseTrajectory(degrees [][]float64, point []float64) (err error) {
 
 	count := len(degrees)
 	if count > 0 {
-		if err := uc.controller.SetDegrees(degrees[0]); err != nil {
+		if err := u.controller.SetDegrees(degrees[0]); err != nil {
 			return err
 		}
 	}
 
-	if err := uc.controller.ControlON(); err != nil {
+	if err := u.controller.ControlON(); err != nil {
 		return err
 	}
 
 	//create timer
 	done := make(chan bool, 1)
-	ticker := time.NewTicker(time.Duration(uc.controller.GetPeriod()*1e+6) * time.Microsecond)
+	ticker := time.NewTicker(time.Duration(u.controller.GetPeriod()*1e+6) * time.Microsecond)
 
 	// current line
 	counter := 0
@@ -132,16 +133,16 @@ func (uc *UseCase) sendInitialiseTrajectory(degrees [][]float64, point []float64
 			select {
 			case <-ticker.C:
 				counter++
-				uc.movingMutex.Lock()
-				if counter < count && !uc.resetFlag {
-					go func() {
-						if err := uc.controller.SetDegrees(degrees[counter]); err != nil {
+				u.movingMutex.Lock()
+				if counter < count && !u.resetFlag {
+					go func(c int) {
+						if err := u.controller.SetDegrees(degrees[c]); err != nil {
 							log.Println("sendTrajectory: " + err.Error())
 						}
-						uc.movingMutex.Unlock()
-					}()
+						u.movingMutex.Unlock()
+					}(counter)
 				} else {
-					uc.movingMutex.Unlock()
+					u.movingMutex.Unlock()
 					done <- true
 					return
 				}
@@ -150,7 +151,7 @@ func (uc *UseCase) sendInitialiseTrajectory(degrees [][]float64, point []float64
 	}()
 	<-done
 	if counter == count {
-		uc.position = point
+		u.position = point
 	}
 	return
 }

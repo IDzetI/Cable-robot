@@ -44,6 +44,26 @@ func VectorSub(a, b *[]float64) (c *[]float64) {
 	return
 }
 
+func VectorLike(a *[]float64, b float64) (c *[]float64) {
+	c = &[]float64{}
+	for i := 0; i < len(*a); i++ {
+		*c = append(*c, b)
+	}
+	return
+}
+
+func VectorMinValue(a, b *[]float64) (c *[]float64) {
+	c = &[]float64{}
+	for i := 0; i < MinLength(a, b); i++ {
+		if math.Abs((*a)[i]) < math.Abs((*b)[i]) {
+			*c = append(*c, (*a)[i])
+		} else {
+			*c = append(*c, (*b)[i])
+		}
+	}
+	return
+}
+
 func MinLength(a, b *[]float64) int {
 	return IntMin(len(*a), len(*b))
 }

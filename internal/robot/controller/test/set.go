@@ -11,8 +11,8 @@ func (c *controller) SendTrajectory(degrees [][]float64) (err error) {
 }
 
 func (c *controller) SetDegrees(degrees []float64) (err error) {
-	//log.Println(time.Now(),"controller set degree", degrees)
-	time.Sleep(time.Millisecond)
+	log.Println(time.Now(), "controller set degree", degrees)
+	time.Sleep(4 * time.Millisecond)
 	return
 }
 

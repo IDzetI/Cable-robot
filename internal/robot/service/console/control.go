@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/IDzetI/Cable-robot/internal/robot"
+	robot_service "github.com/IDzetI/Cable-robot/internal/robot/service"
 	"github.com/IDzetI/Cable-robot/pkg/utils"
 	"log"
 	"os"
@@ -11,11 +12,20 @@ import (
 	"strings"
 )
 
-func Start(uc robot.UseCase) (err error) {
+type service struct {
+	uc *robot.UseCase
+}
+
+func New(uc *robot.UseCase) robot_service.Service {
+	s := service{uc: uc}
+	return &s
+}
+
+func (s *service) Start() (err error) {
 
 	//create post back listener
 	c := make(chan string)
-	go listener(c)
+	go s.listener(c)
 
 	//create reader for reed from console
 	reader := bufio.NewReader(os.Stdin)
@@ -31,17 +41,23 @@ func Start(uc robot.UseCase) (err error) {
 		data := strings.Split(line, " ")
 
 		switch data[0] {
+		case "e":
+			err = s.uc.ExternalControl([]float64{0, 500, 0})
+			if err != nil {
+				panic(err)
+			}
+
 		case cmdStop:
-			go uc.Stop(c)
+			go s.uc.Stop(c)
 
 		case cmdResume:
-			go uc.Resume(c)
+			go s.uc.Resume(c)
 
 		case cmdReset:
-			go uc.Reset(c)
+			go s.uc.Reset(c)
 
 		case cmdReadDegree:
-			lengths, err := uc.ReadDegrees()
+			lengths, err := s.uc.ReadDegrees()
 			if err != nil {
 				fmt.Println(err.Error())
 			} else {
@@ -52,86 +68,86 @@ func Start(uc robot.UseCase) (err error) {
 			switch data[1] {
 
 			case cmdSetSpeed:
-				go setSingleValue(data[2], uc.SetSpeedCartesianSpace)
+				go setSingleValue(data[2], s.uc.SetSpeedCartesianSpace)
 
 			case cmdSetMinSpeed:
-				go setSingleValue(data[2], uc.SetMinSpeedCartesianSpace)
+				go setSingleValue(data[2], s.uc.SetMinSpeedCartesianSpace)
 
 			case cmdSetAcceleration:
-				go setSingleValue(data[2], uc.SetAccelerationCartesianSpace)
+				go setSingleValue(data[2], s.uc.SetAccelerationCartesianSpace)
 
 			case cmdSetDeceleration:
-				go setSingleValue(data[2], uc.SetDecelerationCartesianSpace)
+				go setSingleValue(data[2], s.uc.SetDecelerationCartesianSpace)
 
 			case cmdSetExtruderSpeed:
-				go setSingleValue(data[2], uc.SetExtruderSpeed)
+				go setSingleValue(data[2], s.uc.SetExtruderSpeed)
 
 			case cmdSetShift:
-				go setArrayValue(data[2:], uc.SetShift)
+				go setArrayValue(data[2:], s.uc.SetShift)
 			}
 
 		case cmdSetJoinSpace:
 			switch data[1] {
 
 			case cmdSetSpeed:
-				go setSingleValue(data[2], uc.SetSpeedJoinSpace)
+				go setSingleValue(data[2], s.uc.SetSpeedJoinSpace)
 
 			case cmdSetMinSpeed:
-				go setSingleValue(data[2], uc.SetMinSpeedJoinSpace)
+				go setSingleValue(data[2], s.uc.SetMinSpeedJoinSpace)
 
 			case cmdSetAcceleration:
-				go setSingleValue(data[2], uc.SetAccelerationJoinSpace)
+				go setSingleValue(data[2], s.uc.SetAccelerationJoinSpace)
 
 			case cmdSetDeceleration:
-				go setSingleValue(data[2], uc.SetDecelerationJoinSpace)
+				go setSingleValue(data[2], s.uc.SetDecelerationJoinSpace)
 			}
 
 		case cmdInit:
-			go moveToPoint(data[1:], c, uc.MoveInJoinSpace)
+			go moveToPoint(data[1:], c, s.uc.MoveInJoinSpace)
 
 		case cmdMove:
-			go moveToPoint(data[1:], c, uc.MoveInCartesianSpace)
+			go moveToPoint(data[1:], c, s.uc.MoveInCartesianSpace)
 
 		case cmdControl:
 			switch data[1] {
 
 			case cmdControlON:
-				go exec(c, uc.ControlOn)
+				go exec(c, s.uc.ControlOn)
 
 			case cmdControlOFF:
-				go exec(c, uc.ControlOff)
+				go exec(c, s.uc.ControlOff)
 
 			case cmdControlRESET:
-				go exec(c, uc.ControlOff)
-				go exec(c, uc.ControlOn)
+				go exec(c, s.uc.ControlOff)
+				go exec(c, s.uc.ControlOn)
 			}
 
 		case cmdFile:
 			switch data[1] {
 
 			case cmdFileLoad:
-				go execWithString(data[2], c, uc.FileLoad)
+				go execWithString(data[2], c, s.uc.FileLoad)
 
 			case cmdFileInit:
-				go exec(c, uc.FileInit)
+				go exec(c, s.uc.FileInit)
 
 			case cmdFileNext:
-				go exec(c, uc.FileNext)
+				go exec(c, s.uc.FileNext)
 
 			case cmdFileCurrent:
-				go exec(c, uc.FileCurrent)
+				go exec(c, s.uc.FileCurrent)
 
 			case cmdFilePrevious:
-				go exec(c, uc.FilePrevious)
+				go exec(c, s.uc.FilePrevious)
 
 			case cmdFileSetCursor:
-				go execWithInt(data[2], c, uc.FileSetCursor)
+				go execWithInt(data[2], c, s.uc.FileSetCursor)
 
 			case cmdFileGo:
-				fileGo(reader, uc, c)
+				s.fileGo(reader, c)
 
 			case cmdFileRun:
-				go exec(c, uc.FileRun)
+				go exec(c, s.uc.FileRun)
 
 			}
 
@@ -145,7 +161,7 @@ func Start(uc robot.UseCase) (err error) {
 	return
 }
 
-func fileGo(reader *bufio.Reader, uc robot.UseCase, c chan string) {
+func (s *service) fileGo(reader *bufio.Reader, c chan string) {
 	fmt.Println("press ENTER to next\n" +
 		"write p and press ENTER to go to previous position\n" +
 		"write q and press ENTER to exit from this mode")
@@ -158,11 +174,11 @@ func fileGo(reader *bufio.Reader, uc robot.UseCase, c chan string) {
 		}
 		switch command {
 		case cmdFileGoPrevious:
-			exec(c, uc.FilePrevious)
+			exec(c, s.uc.FilePrevious)
 		case cmdFileGoExit:
 			return
 		default:
-			exec(c, uc.FileNext)
+			exec(c, s.uc.FileNext)
 		}
 	}
 }
@@ -230,7 +246,7 @@ func setSingleValue(s string, f func(float64) error) {
 	}
 }
 
-func listener(c chan string) {
+func (s *service) listener(c chan string) {
 	for msg := range c {
 		log.Println(msg)
 	}

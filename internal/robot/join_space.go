@@ -2,48 +2,48 @@ package robot
 
 import "github.com/IDzetI/Cable-robot/pkg/utils"
 
-func (uc *UseCase) SetSpeedJoinSpace(v float64) (err error) {
-	return uc.trajectoryJoinSpace.SetSpeed(v)
+func (u *UseCase) SetSpeedJoinSpace(v float64) (err error) {
+	return u.trajectoryJoinSpace.SetSpeed(v)
 }
 
-func (uc *UseCase) SetMinSpeedJoinSpace(v float64) (err error) {
-	return uc.trajectoryJoinSpace.SetMinSpeed(v)
+func (u *UseCase) SetMinSpeedJoinSpace(v float64) (err error) {
+	return u.trajectoryJoinSpace.SetMinSpeed(v)
 }
 
-func (uc *UseCase) SetAccelerationJoinSpace(v float64) (err error) {
-	return uc.trajectoryJoinSpace.SetAcceleration(v)
+func (u *UseCase) SetAccelerationJoinSpace(v float64) (err error) {
+	return u.trajectoryJoinSpace.SetAcceleration(v)
 }
 
-func (uc *UseCase) SetDecelerationJoinSpace(v float64) (err error) {
-	return uc.trajectoryJoinSpace.SetDeceleration(v)
+func (u *UseCase) SetDecelerationJoinSpace(v float64) (err error) {
+	return u.trajectoryJoinSpace.SetDeceleration(v)
 }
 
-func (uc *UseCase) MoveInJoinSpace(point []float64, c chan string) (err error) {
+func (u *UseCase) MoveInJoinSpace(point []float64, c chan string) (err error) {
 
 	//get current degree
-	lengths, err := uc.controller.GetDegrees()
+	degrees, err := u.controller.GetDegrees()
 	if err != nil {
 		return
 	}
 
 	//shift point
-	uc.shiftPoint(&point)
+	u.shiftPoint(&point)
 
 	//get end degree position
-	endLengths, err := uc.kinematics.GetDegrees(point)
+	endDegrees, err := u.kinematics.GetDegrees(point)
 	if err != nil {
 		return
 	}
 
 	//calculate trajectory
-	trajectory, _, err := uc.trajectoryJoinSpace.Line(lengths, endLengths)
+	trajectory, _, err := u.trajectoryJoinSpace.Line(degrees, endDegrees)
 	if err != nil {
 		return
 	}
 
 	//execute trajectory
 	c <- "robot move to " + utils.ToString(point)
-	err = uc.sendInitialiseTrajectory(trajectory, point)
+	err = u.sendInitialiseTrajectory(trajectory, point)
 	c <- "robot stop"
 	return
 }
