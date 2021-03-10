@@ -5,20 +5,20 @@ workspace:
   [
   [-4000,4000],
   [-1700,1700],
-  [-200,1500]
+  [-1200,1500]
   ]
 
 cartesianSpace:
   acceleration: 100
   deceleration: 100
-  speed: 50
-  minSpeed: 10
+  speed: 40
+  minSpeed: 5
 
 joinSpace:
   acceleration: 50
   deceleration: 50
-  speed: 50
-  minSpeed: 1
+  speed: 40
+  minSpeed: 2
 
 motors:
 # motor 0
