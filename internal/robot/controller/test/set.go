@@ -12,7 +12,6 @@ func (c *controller) SendTrajectory(degrees [][]float64) (err error) {
 
 func (c *controller) SetDegrees(degrees []float64) (err error) {
 	log.Println(time.Now(), "controller set degree", degrees)
-	time.Sleep(4 * time.Millisecond)
 	return
 }
 
@@ -28,5 +27,10 @@ func (c *controller) ControlOFF() (err error) {
 
 func (c *controller) HasError() (e bool, err error) {
 	log.Println("controller has error")
+	return
+}
+
+func (c *controller) Reset() (err error) {
+	log.Println("controller was reset")
 	return
 }

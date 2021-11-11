@@ -41,10 +41,15 @@ func (s *service) Start() (err error) {
 		data := strings.Split(line, " ")
 
 		switch data[0] {
+		case "p":
+			fmt.Println(s.uc.GetPosition())
 		case "e":
-			err = s.uc.ExternalControl([]float64{0, 500, 0})
+			point, err := utils.ToFloatArray(data[1:])
 			if err != nil {
-				panic(err)
+				c <- err.Error()
+			}
+			if err = s.uc.ExternalControl(point); err != nil {
+				c <- err.Error()
 			}
 
 		case cmdStop:

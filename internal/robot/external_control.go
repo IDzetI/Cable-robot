@@ -81,6 +81,5 @@ func (u *UseCase) ExternalControl(position []float64) (err error) {
 			}
 		}
 	}()
-	<-done
 	return
 }

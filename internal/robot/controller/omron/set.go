@@ -75,3 +75,28 @@ func (c *controller) HasError() (e bool, err error) {
 	e = isError[0] == 1
 	return
 }
+
+func (c *controller) Reset() (err error) {
+	var data []uint16
+	for _, length := range []float64{0, 0, 0} {
+		for _, d := range utils.Float64Uint16(length) {
+			data = append(data, d)
+		}
+	}
+	if err := c.robot.WriteDNoResponse(420, data); err != nil {
+		return err
+	}
+	if err := c.robot.WriteDNoResponse(440, data); err != nil {
+		return err
+	}
+	if err := c.robot.WriteDNoResponse(460, data); err != nil {
+		return err
+	}
+	if err := c.robot.WriteDNoResponse(480, data); err != nil {
+		return err
+	}
+	if err := c.robot.WriteDNoResponse(500, data); err != nil {
+		return err
+	}
+	return
+}

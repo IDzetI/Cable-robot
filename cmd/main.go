@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/IDzetI/Cable-robot/config"
 	"github.com/IDzetI/Cable-robot/internal/robot"
-	robot_controller_omron "github.com/IDzetI/Cable-robot/internal/robot/controller/omron"
+	robot_controller_test "github.com/IDzetI/Cable-robot/internal/robot/controller/test"
 	"github.com/IDzetI/Cable-robot/internal/robot/kinematics/rw_model"
 	robot_service_console "github.com/IDzetI/Cable-robot/internal/robot/service/console"
 	"github.com/IDzetI/Cable-robot/internal/robot/trajectory/v1"
@@ -20,8 +20,8 @@ func main() {
 	}
 
 	//initialise robot controller
-	robotController, err := robot_controller_omron.New(conf.Period, conf.Ip)
-	//robotController, err := robot_controller_test.New()
+	//robotController, err := robot_controller_omron.New(conf.Period, conf.Ip)
+	robotController, err := robot_controller_test.New()
 	if err != nil {
 		panic(err)
 	}

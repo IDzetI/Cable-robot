@@ -39,13 +39,21 @@ func (u *UseCase) Resume(c chan string) {
 
 func (u *UseCase) Reset(c chan string) {
 	u.resetFlag = true
+	defer func() {
+		u.resetFlag = false
+	}()
+
 	if u.stopFlag {
 		u.movingMutex.Unlock()
 	}
 	u.stopFlag = false
 	go func() {
-		time.Sleep(time.Second)
-		u.resetFlag = false
+		if err := u.controller.Reset(); err == nil {
+			u.position = []float64{0, 0, 0}
+		} else {
+			c <- err.Error()
+			return
+		}
 		c <- "reset done"
 	}()
 }

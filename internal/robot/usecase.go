@@ -41,6 +41,14 @@ func New(c robot_controller.Controller,
 	return
 }
 
+func (u *UseCase) GetPosition() []float64 {
+	if u.position == nil {
+		return []float64{0, 0, 0}
+	} else {
+		return u.position
+	}
+}
+
 func (u *UseCase) GetSpeed() []float64 {
 	if u.speed == nil {
 		return []float64{0, 0, 0}

@@ -8,4 +8,6 @@ type Controller interface {
 
 	ControlON() (err error)
 	ControlOFF() (err error)
+
+	Reset() (err error)
 }
