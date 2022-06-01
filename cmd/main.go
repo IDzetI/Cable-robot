@@ -16,14 +16,14 @@ func main() {
 	//read config from config.yaml
 	conf, err := config.Init()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	//initialise robot controller
 	//robotController, err := robot_controller_omron.New(conf.Period, conf.Ip)
 	robotController, err := robot_controller_test.New()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	//initialise robot kinematic model
@@ -38,7 +38,7 @@ func main() {
 	}
 	robotKinematics, err := robot_kinematics_rw_model.New(robotMotors)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	//initialise trajectory planing in cartesian space
@@ -51,7 +51,7 @@ func main() {
 		conf.Workspace,
 	)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	//initialise trajectory
@@ -69,13 +69,13 @@ func main() {
 		},
 	)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	//initialise extruder
 	//robotExtruder, err := robot_extruder_smsd.New(conf.Extruder.Port)
 	//if err != nil {
-	//	panic(err)
+	//	log.Fatal(err)
 	//}
 
 	//initialise robot
@@ -88,6 +88,6 @@ func main() {
 
 	//start robot console control
 	if err := robot_service_console.New(&robotUseCase).Start(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
